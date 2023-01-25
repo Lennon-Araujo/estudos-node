@@ -36,24 +36,32 @@ class LivroController {
   static atualizarLivro = (req, res) => {
     const id = req.params.id;
 
-    livros.findByIdAndUpdate(id, { $set: req.body }, (err) => {
+    livros.findByIdAndUpdate(id, { $set: req.body }, (err, livro) => {
       if (!err) {
-        res.status(200).send({ message: "Livro atualizado com sucesso." })
-      } else {
-        res.status(400).send({ message: `${err.message}: Não foi possível atualizar o livro, verifique se os parâmetros estão corretos.` })
+        return res.status(200).send({ message: "Livro atualizado com sucesso." })
       }
+
+      if (!livro) {
+        return res.status(404).send({ message: "Item não encontrado, verifique se os parâmetros estão corretos." })
+      }
+
+      res.status(400).send({ message: `${err.message}: Não foi possível atualizar o livro, verifique se os parâmetros estão corretos.` })
     })
   }
 
   static removerLivro = (req, res) => {
     const id = req.params.id;
 
-    livros.findByIdAndDelete(id, (err) => {
-      if (!err) {
-        res.status(200).send({ message: "Livro removido com sucesso." })
-      } else {
-        res.status(500).send({ message: err.message })
+    livros.findByIdAndDelete(id, (err, livro) => {
+      if (err) {
+        return res.status(500).send({ message: err.message })
       }
+      
+      if (!livro) {
+        return res.status(404).send({ message: "Item não encontrado, verifique se os parâmetros estão corretos." })
+      }
+
+      res.status(200).send({ message: "Livro removido com sucesso." })
     })
   }
 }
