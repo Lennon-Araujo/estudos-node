@@ -1,12 +1,18 @@
 import livros from "../models/Livro.js";
-import { ObjectId } from "mongoose";
 
 class LivroController {
 
   static listarlivros = (req, res) => {
-    livros.find()
+    let { editora } = req.query;
+
+    const query = editora ? {'editora': editora} : null;
+
+    livros.find(query)
       .populate('autor', 'nome')
       .exec((err, livros) => {
+        if (livros.length == 0) {
+          return res.status(404).send({ message: "Não conseguimos encontrar o livro informado, verifique se os parâmetros estão corretos."});
+        }
         res.status(200).json(livros);
       })
   }
@@ -16,6 +22,20 @@ class LivroController {
 
     livros.findById(id)
       .populate('autor', 'nome')
+      .exec((err, livro) => {
+        if (!err) {
+          res.status(200).send(livro)
+        } else {
+          res.status(400).send({ message: `${err.message}: Não conseguimos encontrar o livro informado, verifique se os parâmetros estão corretos.` })
+        }
+      })
+  }
+
+  static buscarLivroPorEditora = (req, res) => {
+    const editora = req.query.editora;
+    console.log(req.query.editora);
+
+    livros.find({ 'editora': editora })
       .exec((err, livro) => {
         if (!err) {
           res.status(200).send(livro)
